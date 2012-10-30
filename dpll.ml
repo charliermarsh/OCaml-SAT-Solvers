@@ -31,19 +31,19 @@ let find_unit_clause (cnf:cnf) : assignment option =
 ;;
 
 (* returns a cnf with instances of a symbol and satisfied clauses removed *)
-let cleanup (cnf:cnf) (asg:assignment) : cnf =
+let cleanup (cnf:cnf) (sym:symbol) : cnf =
   List.fold_left
     (fun new_cnf clause ->
       let new_clause =
          (List.fold_left (fun new_clause lit ->
 	   let (lit_sym, _) = lit in
-	   let (asg_sym, _) = asg in
-	   if (lit_sym = asg_sym) then new_clause else lit::new_clause) [] clause) in
+	   if (lit_sym = sym) then new_clause else lit::new_clause) [] clause) in
     match new_clause with [] -> new_cnf | _ -> new_clause::new_cnf) [] cnf
 ;;
 
-(* main method to run dpll algorithm *)
-let dpll (cnf:cnf) : model =
+(* main method to run dpll algorithm: returns (bool, model) where bool
+ * = 'is cnf satisfied by model' *)
+let dpll (cnf:cnf) : bool*model =
   let rec dpll_sat (cnf:cnf) (syms:symbol list) (ml:model) : bool*model =
     if (is_cnf_sat cnf ml) then (true, ml)
     else
@@ -53,17 +53,17 @@ let dpll (cnf:cnf) : model =
 	  ((Some asg, _) | (_, Some asg)) ->
 	    let (sym, _) = asg in
 	    let syms = List.filter (fun sym' -> not (sym = sym')) syms in
-	    dpll_sat (cleanup cnf asg) syms (asg::ml)
+	    dpll_sat (cleanup cnf sym) syms (asg::ml)
 	| _ -> match syms with
 	         [] -> (false, ml)
                | hd::tl ->
+		 let cnf' = cleanup cnf hd in
 		 let asg1 = (hd, true) in
-		 let (b1, m1) = dpll_sat (cleanup cnf asg1) tl (asg1::ml) in
+		 let (b1, m1) = dpll_sat cnf' tl (asg1::ml) in
 		 if b1 then (b1, m1) else
 		   let asg2 = (hd, false) in
-		   dpll_sat (cleanup cnf asg2) tl (asg2::ml) in
-  let (b, ml) = dpll_sat cnf (symbols_in_cnf cnf) [] in
-  ml
+		   dpll_sat cnf' tl (asg2::ml) in
+  dpll_sat cnf (symbols_in_cnf cnf) []
 ;;
 	  
       
