@@ -1,4 +1,4 @@
-open List ;;
+open Cnf ;;
 
 (* extracts a literal that appears in pure form in a given cnf *)
 let find_pure_symbol (syms:symbol list) (cnf:cnf) : assignment option =
@@ -10,13 +10,14 @@ let find_pure_symbol (syms:symbol list) (cnf:cnf) : assignment option =
 				   if (sym = sym') then Some (b = b')
 				   else None
 			 | _ -> acc) None lit_lst in 
-  let pure_lits = List.fold_left (fun pure_lits nxt ->
+  let pure_lits = List.fold_left (fun pure_lits nxt_clause ->
                      (List.fold_left
-			(fun pure_lits lit -> match (matches_assignment lit pure_lits) with
-			    None -> lit::pure_lits
-			  | Some false -> let (sym, _) = lit in
-					  List.filter (fun (sym', _) -> not (sym = sym')) pure_lits
-			  | _ -> pure_lits) pure_lits nxt) pure_lits nxt) [] cnf in
+			(fun lits nxt_lit ->
+			  match (matches_assignment nxt_lit pure_lits) with
+			    None -> nxt_lit::lits
+			  | Some false -> let (sym, _) = nxt_lit in List.filter (fun (sym', _) -> not (sym = sym')) lits
+			  | _ -> lits)
+			pure_lits nxt_clause)) [] cnf in
   match pure_lits with
       [] -> None
     | hd::_ -> Some hd
@@ -40,7 +41,9 @@ let cleanup (cnf:cnf) (asg:assignment) : cnf =
 	   if (lit_sym = asg_sym) then new_clause else lit::new_clause) [] clause) in
     match new_clause with [] -> new_cnf | _ -> new_clause::new_cnf) [] cnf
 ;;
-(*
-let dpll_sat (cnf:cnf) : boolean =
+
+(* main method to run dpll algorithm *)
+let dpll (cnf:cnf) : model =
+  let rec dpll_sat (cnf:cnf) : boolean =
   
-*)
+

@@ -36,3 +36,14 @@ let symbols_in_cnf (cnf:cnf) : symbol list =
 		   all_syms nxt)
     [] cnf
 ;;
+
+
+(* method to print model *)
+let print_assignment (ml:model) =
+  List.fold_left
+    (fun _ (sym, b) ->
+      print_string sym;
+      print_string " = ";
+      if b then print_string "true" else print_string "false";
+      print_newline ()) () ml
+;;
