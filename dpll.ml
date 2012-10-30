@@ -1,7 +1,7 @@
 open Cnf ;;
 
 (* extracts a literal that appears in pure form in a given cnf *)
-let find_pure_symbol (syms:symbol list) (cnf:cnf) : assignment option =
+let find_pure_symbol (cnf:cnf) : assignment option =
   let matches_assignment (lit:literal) (lit_lst:literal list) : bool option =
     List.fold_left (fun acc nxt ->
                        match acc with
@@ -24,7 +24,7 @@ let find_pure_symbol (syms:symbol list) (cnf:cnf) : assignment option =
 ;;
 
 (* extracts a literal that appears as a unit clause in a given cnf *)
-let find_unit_clause (cnf:cnf) (ml:model) : assignment option =
+let find_unit_clause (cnf:cnf) : assignment option =
   List.fold_left (fun acc nxt -> if (acc = None) then
                                     match nxt with hd::[] -> Some hd | _ -> None
                                  else acc) None cnf
@@ -44,6 +44,29 @@ let cleanup (cnf:cnf) (asg:assignment) : cnf =
 
 (* main method to run dpll algorithm *)
 let dpll (cnf:cnf) : model =
-  let rec dpll_sat (cnf:cnf) : boolean =
+  let rec dpll_sat (cnf:cnf) (syms:symbol list) (ml:model) : bool*model =
+    if (is_cnf_sat cnf ml) then (true, ml)
+    else
+      let unit = find_unit_clause cnf in
+      let pure = if (unit = None) then find_pure_symbol cnf else None in
+      match (unit, pure) with
+	  ((Some asg, _) | (_, Some asg)) ->
+	    let (sym, _) = asg in
+	    let syms = List.filter (fun sym' -> not (sym = sym')) syms in
+	    dpll_sat (cleanup cnf asg) syms (asg::ml)
+	| _ -> match syms with
+	         [] -> (false, ml)
+               | hd::tl ->
+		 let asg1 = (hd, true) in
+		 let (b1, m1) = dpll_sat (cleanup cnf asg1) tl (asg1::ml) in
+		 if b1 then (b1, m1) else
+		   let asg2 = (hd, false) in
+		   dpll_sat (cleanup cnf asg2) tl (asg2::ml) in
+  let (b, ml) = dpll_sat cnf (symbols_in_cnf cnf) [] in
+  ml
+;;
+	  
+      
+    
   
 
