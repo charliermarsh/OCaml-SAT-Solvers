@@ -2,7 +2,7 @@ TEST=test
 
 all: $(TEST)
 
-test:
+test: *.ml
 	ocamlc -o test cnf.ml dpll.ml generator.ml test.ml
 
 clean:

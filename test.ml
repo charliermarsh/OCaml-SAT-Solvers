@@ -1,4 +1,4 @@
-open Randomgenerator
+open Generator
 
 let _ =
-  gen_solve_print 1 2 3
+  gen_solve_print 4 3 3
