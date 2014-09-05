@@ -1,5 +1,5 @@
-open Cnf ;;
-open Dpll ;;
+open Cnf
+open Dpll
 
 (* generates a randomized cnf of length num_clauses in which each clause
  * has num_literals literals and the total number of distinct symbols is
@@ -16,9 +16,8 @@ let generate_cnf (num_syms:int) (num_clauses:int) (num_literals:int) : cnf =
   let rec add_clause cnt cnf =
     match cnt with
 	0 -> cnf
-      | _ -> add_clause (cnt-1) (generate_clause ()::cnf) in
+  | _ -> add_clause (cnt-1) (generate_clause ()::cnf) in
   add_clause num_clauses []
-;;
 
 let gen_solve_print (num_syms:int) (num_clauses:int) (num_literals:int) =
   let cnf = generate_cnf num_syms num_clauses num_literals in
@@ -28,5 +27,3 @@ let gen_solve_print (num_syms:int) (num_clauses:int) (num_literals:int) =
   if b then print_string "Solved" else print_string "Unsolved";
   print_newline ();
   print_model ml
-;;
-  

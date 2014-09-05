@@ -1,4 +1,4 @@
-open Cnf ;;
+open Cnf
 
 (* extracts a literal that appears in pure form in a given cnf *)
 let find_pure_symbol (cnf:cnf) : assignment option =
@@ -9,7 +9,7 @@ let find_pure_symbol (cnf:cnf) : assignment option =
 				   let (sym', b') = nxt in
 				   if (sym = sym') then Some (b = b')
 				   else None
-			 | _ -> acc) None lit_lst in 
+			 | _ -> acc) None lit_lst in
   let pure_lits = List.fold_left (fun pure_lits nxt_clause ->
                      (List.fold_left
 			(fun lits nxt_lit ->
@@ -21,14 +21,12 @@ let find_pure_symbol (cnf:cnf) : assignment option =
   match pure_lits with
       [] -> None
     | hd::_ -> Some hd
-;;
 
 (* extracts a literal that appears as a unit clause in a given cnf *)
 let find_unit_clause (cnf:cnf) : assignment option =
   List.fold_left (fun acc nxt -> if (acc = None) then
                                     match nxt with hd::[] -> Some hd | _ -> None
                                  else acc) None cnf
-;;
 
 (* returns a cnf with instances of a symbol and satisfied clauses removed *)
 let cleanup (cnf:cnf) (sym:symbol) : cnf =
@@ -39,7 +37,6 @@ let cleanup (cnf:cnf) (sym:symbol) : cnf =
 	   let (lit_sym, _) = lit in
 	   if (lit_sym = sym) then new_clause else lit::new_clause) [] clause) in
     match new_clause with [] -> new_cnf | _ -> new_clause::new_cnf) [] cnf
-;;
 
 (* main method to run dpll algorithm: returns (bool, model) where bool
  * = 'is cnf satisfied by model' *)
@@ -64,9 +61,3 @@ let dpll (cnf:cnf) : bool*model =
 		   let asg2 = (hd, false) in
 		   dpll_sat cnf' tl (asg2::ml) in
   dpll_sat cnf (symbols_in_cnf cnf) []
-;;
-	  
-      
-    
-  
-
